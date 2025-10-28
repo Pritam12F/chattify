@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/constants/personality.ts","./src/db/index.ts","./src/open-ai/index.ts","./src/routes/chat/index.ts","./src/routes/fetch-chat/index.ts"],"version":"5.9.3"}

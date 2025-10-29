@@ -9,9 +9,11 @@ createChatRouter.post("/", async (req: Request, res: Response) => {
   const { initialPrompt } = req.body;
 
   if (!initialPrompt) {
-    res.json({
-      messaage: "No initial prompt provided",
-    });
+    res
+      .json({
+        messaage: "No initial prompt provided",
+      })
+      .status(402);
 
     return;
   }

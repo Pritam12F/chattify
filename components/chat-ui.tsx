@@ -60,7 +60,7 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-card sticky top-0">
         <div className="mx-auto flex max-w-4xl items-center gap-4 px-4 py-4">
           <Button
             variant="ghost"
@@ -148,7 +148,7 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-border bg-card">
+      <div className="border-t border-border bg-card sticky bottom-0">
         <div className="mx-auto max-w-4xl px-4 py-4">
           <form className="flex gap-2">
             <Input

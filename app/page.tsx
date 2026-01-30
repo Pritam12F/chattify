@@ -43,8 +43,8 @@ export default function Home() {
             </h1>
           </div>
           <p className="mx-auto max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground">
-            Chat with AI personalities of history's greatest minds. Select a
-            personality below to start your conversation.
+            Chat with AI personalities of history&apos;s greatest minds. Select
+            a personality below to start your conversation.
           </p>
         </div>
 

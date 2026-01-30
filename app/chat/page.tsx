@@ -3,15 +3,15 @@
 import { ChatInterface } from "@/components/chat-ui";
 import { personalities } from "@/constants/personality";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 
-export default function ChatPage() {
+function ChatUI() {
   const searchParams = useSearchParams();
   const personalityId = searchParams.get("type");
 
   const personality = useMemo(
     () => personalities.find((p) => p.id === personalityId),
-    [personalityId, searchParams]
+    [personalityId, searchParams],
   );
 
   if (!personality) {
@@ -23,4 +23,12 @@ export default function ChatPage() {
   }
 
   return <ChatInterface personality={personality} />;
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense>
+      <ChatUI />
+    </Suspense>
+  );
 }

@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "system",
-            content: personalities.find((p) => p.id === personalityId)
-              ?.systemPrompt!,
+            content: personalities.find((p) => p.id === personalityId)!
+              .systemPrompt,
           },
           { role: "user", content: userInput },
         ],
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
       await prisma.message.create({
         data: {
-          chatId: chatCreated?.id!,
+          chatId: chatCreated?.id,
           type: "USER",
           content: userInput as string,
         },
@@ -61,9 +61,9 @@ export async function POST(req: NextRequest) {
 
       await prisma.message.create({
         data: {
-          chatId: chatCreated?.id!,
+          chatId: chatCreated?.id,
           type: "ASSISSTANT",
-          content: chatCompletion?.choices[0].message.content!,
+          content: chatCompletion!.choices[0].message.content!,
         },
       });
 
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     const existingMessagesWithRoles: {
       role: "user" | "assistant";
       content: string;
-    }[] = existingMessages?.messages
+    }[] = existingMessages!.messages
       .sort(
         (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -91,8 +91,8 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "system",
-          content: personalities.find((p) => p.id === personalityId)
-            ?.systemPrompt!,
+          content: personalities.find((p) => p.id === personalityId)!
+            .systemPrompt,
         },
         ...(existingMessagesWithRoles ?? []),
         { role: "user", content: userInput },
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.message.create({
       data: {
-        chatId: existingMessages?.id!,
+        chatId: existingMessages!.id,
         type: "USER",
         content: userInput as string,
       },
@@ -109,9 +109,9 @@ export async function POST(req: NextRequest) {
 
     await prisma.message.create({
       data: {
-        chatId: existingMessages?.id!,
+        chatId: existingMessages!.id,
         type: "ASSISSTANT",
-        content: chatCompletion?.choices[0].message.content!,
+        content: chatCompletion!.choices[0].message.content!,
       },
     });
 

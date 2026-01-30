@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Loader2 } from "lucide-react";
 import { Personality } from "@/constants/personality";
 import { useMessages } from "@/hooks/use-messages";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@/hooks/use-chat";
 import { useRouter } from "next/navigation";
+import { Transition } from "@headlessui/react";
 
 interface ChatInterfaceProps {
   personality: Personality;
@@ -21,6 +22,8 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
     { id?: string; type: "USER" | "ASSISSTANT"; content: string }[]
   >([]);
   const router = useRouter();
+  const latestDivRef = useRef<HTMLDivElement | null>(null);
+  const thinkingRef = useRef<HTMLDivElement | null>(null);
 
   const { messages: existingMessages } = useMessages({
     personality: personality.id,
@@ -43,6 +46,16 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
 
     setNewMessages((prev) => [...prev, { content: reply, type: "ASSISSTANT" }]);
   }, [reply]);
+
+  useEffect(() => {
+    if (isLoading) {
+      const { current } = thinkingRef;
+
+      current?.scrollIntoView({ behavior: "smooth" });
+    } else if (!isLoading && latestDivRef.current) {
+      latestDivRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [allMessages, isLoading]);
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -91,28 +104,38 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
           )}
 
           {allMessages.map((message) => (
-            <div
+            <Transition
               key={message.id}
-              className={`mb-4 flex ${
-                message.type === "USER" ? "justify-end" : "justify-start"
-              }`}
+              appear
+              show={true}
+              enter="transition-all duration-500 ease-out"
+              enterFrom="opacity-0 translate-y-2"
+              enterTo="opacity-100 translate-y-0"
             >
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                  message.type === "USER"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-card-foreground border border-border"
+                key={message.id}
+                ref={latestDivRef}
+                className={`mb-4 flex ${
+                  message.type === "USER" ? "justify-end" : "justify-start"
                 }`}
               >
-                <p className="whitespace-pre-wrap leading-relaxed">
-                  {message.content}
-                </p>
+                <div
+                  className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                    message.type === "USER"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-card-foreground border border-border"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {message.content}
+                  </p>
+                </div>
               </div>
-            </div>
+            </Transition>
           ))}
 
           {isLoading && allMessages?.length > 0 && (
-            <div className="mb-4 flex justify-start">
+            <div ref={thinkingRef} className="mb-4 flex justify-start">
               <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-card-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-sm">Thinking...</span>

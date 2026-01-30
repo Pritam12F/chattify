@@ -27,8 +27,6 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
   });
 
   const allMessages = useMemo(() => {
-    let temp;
-
     if (existingMessages?.length > 0) {
       return [...existingMessages, ...newMessages];
     }

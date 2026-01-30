@@ -9,18 +9,17 @@ export async function POST(req: NextRequest) {
   ).split(",")[0];
 
   try {
-    const user = await prisma.user.upsert({
-      where: { id: ip },
-      update: {},
-      create: { id: ip },
-    });
+    const user = await prisma.user.findFirst({ where: { id: ip } });
 
-    return NextResponse.json({ user });
+    if (user) {
+      throw new Error("User already exists");
+    }
+
+    const createdUser = await prisma.user.create({ data: { id: ip } });
+
+    return NextResponse.json({ createdUser });
   } catch (error) {
     console.log(error);
-    return NextResponse.json(
-      { error: "Failed to create user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error }, { status: 500 });
   }
 }

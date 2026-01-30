@@ -6,22 +6,45 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Loader2 } from "lucide-react";
 import { Personality } from "@/constants/personality";
 import { useMessages } from "@/hooks/use-messages";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useChat } from "@/hooks/use-chat";
+import { useRouter } from "next/navigation";
 
 interface ChatInterfaceProps {
   personality: Personality;
 }
 
 export function ChatInterface({ personality }: ChatInterfaceProps) {
-  const [newMessages, setNewMessages] = useState([]);
-  const { messages } = useMessages({
+  const [userInput, setUserInput] = useState("");
+  const [actualUserInput, setActualUserInput] = useState("");
+  const [newMessages, setNewMessages] = useState<
+    { id?: string; type: "USER" | "ASSISSTANT"; content: string }[]
+  >([]);
+  const router = useRouter();
+
+  const { messages: existingMessages } = useMessages({
     personality: personality.id,
   });
 
-  const allMessages = useMemo(
-    () => [...messages, ...newMessages],
-    [newMessages]
-  );
+  const allMessages = useMemo(() => {
+    let temp;
+
+    if (existingMessages?.length > 0) {
+      return [...existingMessages, ...newMessages];
+    }
+    return [...newMessages];
+  }, [newMessages, existingMessages]);
+
+  const { isLoading, reply } = useChat({
+    personalityId: personality.id,
+    userInput: actualUserInput,
+  });
+
+  useEffect(() => {
+    if (!reply) return;
+
+    setNewMessages((prev) => [...prev, { content: reply, type: "ASSISSTANT" }]);
+  }, [reply]);
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -31,7 +54,8 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-foreground hover:bg-secondary"
+            className="text-foreground hover:bg-secondary cursor-pointer"
+            onClick={() => router.push("/")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -52,7 +76,7 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-4xl px-4 py-6">
-          {messages.length === 0 && (
+          {allMessages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-4 py-12 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-3xl">
                 {personality.avatar}
@@ -68,7 +92,7 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
             </div>
           )}
 
-          {messages.map((message) => (
+          {allMessages.map((message) => (
             <div
               key={message.id}
               className={`mb-4 flex ${
@@ -89,7 +113,7 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
             </div>
           ))}
 
-          {status === "in_progress" && (
+          {isLoading && allMessages?.length > 0 && (
             <div className="mb-4 flex justify-start">
               <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-card-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -108,15 +132,36 @@ export function ChatInterface({ personality }: ChatInterfaceProps) {
           <form className="flex gap-2">
             <Input
               placeholder={`Message ${personality.name}...`}
-              disabled={status === "in_progress"}
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  setActualUserInput(userInput);
+                  setNewMessages((prev) => [
+                    ...prev,
+                    { content: userInput, type: "USER" },
+                  ]);
+                  setUserInput("");
+                }
+              }}
+              type={"text"}
               className="flex-1 bg-background text-foreground"
             />
             <Button
-              type="submit"
-              disabled={status === "in_progress"}
+              type="button"
+              onClick={() => {
+                setActualUserInput(userInput);
+                setNewMessages((prev) => [
+                  ...prev,
+                  { content: userInput, type: "USER" },
+                ]);
+                setUserInput("");
+              }}
+              disabled={isLoading && allMessages?.length > 0}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {status === "in_progress" ? (
+              {isLoading && allMessages?.length > 0 ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <Send className="h-5 w-5" />

@@ -14,10 +14,9 @@ export const useMessages = ({
 
   useEffect(() => {
     const fetchMessages = async () => {
-      const res = await axios.get("/api/get-messages", {
-        data: {
-          personality,
-        },
+      // alert(personality);
+      const res = await axios.post("/api/get-messages", {
+        personality,
       });
 
       setMessages(res.data.messages);
